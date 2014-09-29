@@ -50,7 +50,7 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 
 __all__ = ['InterLap']
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 
 try:
     int_types = (int, long)
