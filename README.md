@@ -16,6 +16,8 @@ Usage
 Interlap takes tuples or lists where the first 2 elements are start, end and the remaining
 elements can be anything.
 
+[ ![Codeship Status for brentp/interlap](https://www.codeship.io/projects/b4029ac0-2a1a-0132-a72c-3a1c9f74327f/status)](https://www.codeship.io/projects/38165)
+
 ```Python
 >>> from interlap import InterLap
 >>> inter = InterLap()
