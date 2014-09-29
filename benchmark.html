@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Benchmarking &mdash; interlap 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.1.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-3.1.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="interlap 0.1 documentation" href="index.html" />
+    <link rel="prev" title="interlap: fast, simple interval overlap" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          interlap</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Benchmarking</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Benchmarking</a><ul>
+<li><a class="reference internal" href="#compared-to-naive-method">Compared to Naive Method</a></li>
+<li><a class="reference internal" href="#compared-to-bx-python-interval-tree">Compared to bx-python interval-tree</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="index.html" title="Previous Chapter: interlap: fast, simple interval overlap"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm">&laquo; interlap: fast, ...</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/benchmark.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <div class="section" id="benchmarking">
+<h1>Benchmarking<a class="headerlink" href="#benchmarking" title="Permalink to this headline">¶</a></h1>
+<p>Here we will benchmark <cite>InterLap</cite></p>
+<p><strong>TLDR</strong> <cite>InterLap</cite> is:</p>
+<ul class="simple">
+<li>40 times faster than naive method with no memory overhead</li>
+<li>20 times slower than the bx-python interval tree written in cython</li>
+</ul>
+<p>Create 50K random intervals of random lengths between 2KB and 20KB across
+100MB of chromosome:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [1]: </span><span class="kn">import</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">sys</span>
+
+<span class="gp">In [2]: </span><span class="kn">from</span> <span class="nn">interlap</span> <span class="kn">import</span> <span class="n">InterLap</span>
+
+<span class="gp">In [3]: </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="gp">In [4]: </span><span class="n">sites</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">22</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="mi">50000</span><span class="p">)</span>
+
+<span class="gp">In [5]: </span><span class="n">sites</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="n">s</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">))</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">]</span>
+
+<span class="gp">In [6]: </span><span class="o">%</span><span class="n">timeit</span> <span class="n">InterLap</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+<span class="go">1 loops, best of 3: 174 ms per loop</span>
+
+<span class="gp">In [7]: </span><span class="n">inter</span> <span class="o">=</span> <span class="n">InterLap</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
+<span class="gp">In [8]: </span><span class="nb">len</span><span class="p">(</span><span class="n">inter</span><span class="p">)</span>
+<span class="gr">Out[8]: </span><span class="mi">50000</span>
+</pre></div>
+</div>
+<p>Now we have the searchable object <cite>inter</cite> with 50K intervals. Since <cite>InterLap</cite> is
+a sorted list, time to create is simply time to create a sorted list.</p>
+<p>We can time to see how fast we can test every site in the tree</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [9]: </span><span class="o">%</span><span class="n">timeit</span> <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">r</span> <span class="ow">in</span> <span class="n">inter</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">)</span>
+<span class="go">1 loops, best of 3: 980 ms per loop</span>
+</pre></div>
+</div>
+<p>And make sure we dont see intervals at positions &lt; 0:</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [10]: </span><span class="o">%</span><span class="n">timeit</span> <span class="k">assert</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">((</span><span class="o">-</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">in</span> <span class="n">inter</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">)</span>
+<span class="go">1 loops, best of 3: 840 ms per loop</span>
+</pre></div>
+</div>
+<p>Now do 100K (10K * 10) queries.</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [11]: </span><span class="k">def</span> <span class="nf">times</span><span class="p">(</span><span class="n">inter</span><span class="p">,</span> <span class="n">test_intervals</span><span class="p">,</span> <span class="n">n_times</span><span class="p">):</span>
+<span class="gp">   ....:</span>      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_times</span><span class="p">):</span>
+<span class="gp">   ....:</span>          <span class="n">a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">t</span> <span class="ow">in</span> <span class="n">inter</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">test_intervals</span><span class="p">)</span>
+<span class="gp">   ....:</span> 
+
+<span class="gp">In [12]: </span><span class="n">test_sites</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span> <span class="mi">100000000</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> <span class="mi">10000</span><span class="p">)</span>
+
+<span class="gp">In [13]: </span><span class="n">test_sites</span> <span class="o">=</span> <span class="p">[(</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">200000</span><span class="p">))</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">test_sites</span><span class="p">]</span>
+
+<span class="gp">In [14]: </span><span class="o">%</span><span class="n">timeit</span> <span class="n">times</span><span class="p">(</span><span class="n">inter</span><span class="p">,</span> <span class="n">test_sites</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">1 loops, best of 3: 2.06 s per loop</span>
+</pre></div>
+</div>
+<div class="section" id="compared-to-naive-method">
+<h2>Compared to Naive Method<a class="headerlink" href="#compared-to-naive-method" title="Permalink to this headline">¶</a></h2>
+<p>We can compare to the naive method (only 1 iteration since it will be slow):</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [15]: </span><span class="k">def</span> <span class="nf">naivetimes</span><span class="p">(</span><span class="n">query_intervals</span><span class="p">,</span> <span class="n">test_intervals</span><span class="p">):</span>
+<span class="gp">   ....:</span>      <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">test_intervals</span><span class="p">:</span>
+<span class="gp">   ....:</span>          <span class="n">isin</span> <span class="o">=</span> <span class="nb">any</span><span class="p">(</span><span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">query_intervals</span><span class="p">)</span>
+<span class="gp">   ....:</span> 
+
+<span class="gp">In [16]: </span><span class="o">%</span><span class="n">timeit</span> <span class="n">naivetimes</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">test_sites</span><span class="p">)</span>
+<span class="go">1 loops, best of 3: 8.8 s per loop</span>
+</pre></div>
+</div>
+<p>So <cite>InterLap</cite> is over 40 times (remember we did only 1 rep here instead of 10)
+as fast as the naive method with <em>no memory overhead</em>.</p>
+</div>
+<div class="section" id="compared-to-bx-python-interval-tree">
+<h2>Compared to bx-python interval-tree<a class="headerlink" href="#compared-to-bx-python-interval-tree" title="Permalink to this headline">¶</a></h2>
+<p>We can compare this to bx-python which uses a tree structure written in cython.</p>
+<div class="highlight-ipython"><div class="highlight"><pre><span class="gp">In [17]: </span><span class="kn">from</span> <span class="nn">bx.intervals</span> <span class="kn">import</span> <span class="n">IntervalTree</span>
+
+<span class="gp">In [18]: </span><span class="o">%</span><span class="n">timeit</span> <span class="n">IntervalTree</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+<span class="go">1000000 loops, best of 3: 324 ns per loop</span>
+
+<span class="gp">In [19]: </span><span class="n">tree</span> <span class="o">=</span> <span class="n">IntervalTree</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span>
+
+<span class="gp">In [20]: </span><span class="k">def</span> <span class="nf">bxtimes</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">test_intervals</span><span class="p">,</span> <span class="n">n_times</span><span class="p">):</span>
+<span class="gp">   ....:</span>      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="n">n_times</span><span class="p">):</span>
+<span class="gp">   ....:</span>          <span class="n">a</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ts</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">ts</span> <span class="ow">in</span> <span class="n">test_intervals</span><span class="p">)</span>
+<span class="gp">   ....:</span> 
+
+<span class="gp">In [21]: </span><span class="o">%</span><span class="n">timeit</span> <span class="n">bxtimes</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">test_sites</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="go">10 loops, best of 3: 108 ms per loop</span>
+</pre></div>
+</div>
+<p>As expected, bx-python is much faster, but <cite>InterLap</cite> does perform quite well
+at ~50K queries per second.</p>
+<p><cite>InterLap</cite> will come within 2X of bx-python if most of the query intervals are
+found in the database.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, Brent S Pedersen.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>interlap &mdash; interlap 0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.1.0/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-3.1.0/css/bootstrap-theme.min.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../_static/js/jquery-fix.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../_static/bootstrap-sphinx.js"></script>
+    <link rel="top" title="interlap 0.1 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+  </head>
+  <body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          interlap</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.1</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            <li class="divider-vertical"></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">Benchmarking</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      
+  <h1>Source code for interlap</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">`InterLap` does fast interval overlap testing with a simple python data structure.</span>
+
+<span class="sd">It works well on the types of querying done in genomic datasets where we have 10&#39;s</span>
+<span class="sd">of thousands of intervals and we check for overlap millions of times. It is very</span>
+<span class="sd">simple and has no dependencies.</span>
+
+<span class="sd">It takes tuples or lists where the first 2 elements are start, end and the remaining</span>
+<span class="sd">elements can be anything.</span>
+
+<span class="sd">&gt;&gt;&gt; from interlap import InterLap</span>
+<span class="sd">&gt;&gt;&gt; inter = InterLap()</span>
+
+<span class="sd">Here create 10K random intervals:</span>
+
+<span class="sd">&gt;&gt;&gt; import random</span>
+<span class="sd">&gt;&gt;&gt; sites = random.sample(range(22, 100000000, 12), 50000)</span>
+<span class="sd">&gt;&gt;&gt; ranges = [(i, i + random.randint(2000, 20000)) for i in sites]</span>
+
+<span class="sd">Add them to the interval tree (this takes &lt; 0.5 seconds):</span>
+
+<span class="sd">&gt;&gt;&gt; inter.update(ranges)</span>
+
+<span class="sd">We can also add one at a time:</span>
+
+<span class="sd">&gt;&gt;&gt; inter.add((20, 22, {&#39;info&#39;: &#39;hi&#39;}))</span>
+
+<span class="sd">Now do overlap testing:</span>
+
+<span class="sd">&gt;&gt;&gt; [20, 21] in inter</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; next(inter.find((21, 21)))</span>
+<span class="sd">(20, 22, {&#39;info&#39;: &#39;hi&#39;})</span>
+
+<span class="sd">&gt;&gt;&gt; inter.add((2, 3, {&#39;info&#39;: &#39;hello&#39;}))</span>
+
+<span class="sd">*NOTE*: below shows how edge-cases are handled.</span>
+
+<span class="sd">&gt;&gt;&gt; list(inter.find((2, 2)))</span>
+<span class="sd">[(2, 3, {&#39;info&#39;: &#39;hello&#39;})]</span>
+<span class="sd">&gt;&gt;&gt; list(inter.find((3, 3)))</span>
+<span class="sd">[(2, 3, {&#39;info&#39;: &#39;hello&#39;})]</span>
+
+<span class="sd">Test every item in the InterLap. These 50K queries take &lt; 0.5 seconds:</span>
+
+<span class="sd">&gt;&gt;&gt; for s, e in ranges:</span>
+<span class="sd">...     assert (s, e) in inter</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;InterLap&#39;</span><span class="p">]</span>
+
+<span class="n">__version__</span> <span class="o">=</span> <span class="s">&#39;0.1&#39;</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">int_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">long</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+    <span class="n">int_types</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">,)</span>
+
+<span class="c">######################################</span>
+<span class="k">def</span> <span class="nf">binsearch_left_start</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;</span> <span class="n">hi</span><span class="p">:</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">:</span> <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span>
+    <span class="k">return</span> <span class="n">lo</span>
+
+<span class="c"># like python&#39;s bisect_right find the _highest_ index where the value x </span>
+<span class="c"># could be inserted to maintain order in the list intervals</span>
+<span class="k">def</span> <span class="nf">binsearch_right_end</span><span class="p">(</span><span class="n">intervals</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+    <span class="k">while</span> <span class="n">lo</span> <span class="o">&lt;</span> <span class="n">hi</span><span class="p">:</span>
+        <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span><span class="o">//</span><span class="mi">2</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">mid</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">else</span><span class="p">:</span> <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">lo</span>
+
+<div class="viewcode-block" id="InterLap"><a class="viewcode-back" href="../index.html#interlap.InterLap">[docs]</a><span class="k">class</span> <span class="nc">InterLap</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Create an Interlap object. (See module docstring).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="p">()):</span>
+        <span class="sd">&quot;&quot;&quot;The ranges are tuples of (start, end, *whatever).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_iset</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="p">(</span><span class="n">ranges</span> <span class="ow">or</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+
+<div class="viewcode-block" id="InterLap.add"><a class="viewcode-back" href="../index.html#interlap.InterLap.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ranges</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a single (or many) [start, end, \*] item to the tree.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ranges</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">,</span> <span class="n">int_types</span><span class="p">):</span>
+            <span class="n">ranges</span> <span class="o">=</span> <span class="p">[</span><span class="n">ranges</span><span class="p">]</span>
+        <span class="n">iset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_maxlen</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_maxlen</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">))</span>
+        <span class="c"># if </span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">30</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ranges</span><span class="p">):</span>
+            <span class="n">iset</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">ranges</span><span class="p">)</span>
+            <span class="n">iset</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+                <span class="n">iset</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">binsearch_left_start</span><span class="p">(</span><span class="n">iset</span><span class="p">,</span> <span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">)),</span> <span class="n">o</span><span class="p">)</span>
+</div>
+    <span class="n">update</span> <span class="o">=</span> <span class="n">add</span>
+
+    <span class="k">def</span> <span class="nf">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_iset</span><span class="p">)</span>
+
+<div class="viewcode-block" id="InterLap.find"><a class="viewcode-back" href="../index.html#interlap.InterLap.find">[docs]</a>    <span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an interable of elements that overlap other in the tree.&quot;&quot;&quot;</span>
+        <span class="n">iset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iset</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">binsearch_left_start</span><span class="p">(</span><span class="n">iset</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxlen</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">))</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">binsearch_right_end</span><span class="p">(</span><span class="n">iset</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">))</span>
+        <span class="n">iopts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iset</span><span class="p">[</span><span class="n">l</span><span class="p">:</span><span class="n">r</span><span class="p">]</span>
+        <span class="n">iiter</span> <span class="o">=</span> <span class="p">(</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">iopts</span> <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">iiter</span><span class="p">:</span> <span class="k">yield</span> <span class="n">o</span>
+</div>
+    <span class="k">def</span> <span class="nf">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a boolean indicating whether `other` overlaps any elements in the tree.&quot;&quot;&quot;</span>
+        <span class="n">iset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_iset</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">binsearch_left_start</span><span class="p">(</span><span class="n">iset</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_maxlen</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">))</span>
+        <span class="c"># since often the found interval will overlap, we short cut that</span>
+        <span class="c"># case of speed.</span>
+        <span class="n">max_search</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">):</span> <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">left</span> <span class="ow">in</span> <span class="n">iset</span><span class="p">[</span><span class="n">l</span><span class="p">:</span><span class="n">l</span> <span class="o">+</span> <span class="n">max_search</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">left</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">left</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="k">return</span> <span class="bp">True</span>
+            <span class="k">if</span> <span class="n">left</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="k">return</span> <span class="bp">False</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">binsearch_right_end</span><span class="p">(</span><span class="n">iset</span><span class="p">,</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">iset</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">s</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">other</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">iset</span><span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="n">max_search</span><span class="p">:</span><span class="n">r</span><span class="p">])</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">time</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">(</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">optionflags</span><span class="o">=</span><span class="n">doctest</span><span class="o">.</span><span class="n">REPORT_ONLY_FIRST_FAILURE</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2014, Brent S Pedersen.<br/>
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
