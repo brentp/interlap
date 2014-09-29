@@ -1,7 +1,7 @@
 InterLap: simple, fast interval overlap testing
 -----------------------------------------------
 
-InterLap is >20 times faster than doing a naive search (see: brentp.github.io/interlap/bench.html)
+InterLap is >20 times faster than doing a naive search (see: [https://brentp.github.io/interlap/bench.html])
 with **no memory overhead** because it operates on a sorted list. It is pure python and has no
 dependencies.
 
