@@ -49,6 +49,11 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 >>> for s, e in ranges:
 ...     assert (s, e) in inter
 
+InterLap objects are iterable:
+
+>>> for seo in inter:
+...     assert (seo[0], seo[1]) in inter
+
 ```
 
 Installation
