@@ -1,12 +1,13 @@
 """
-`InterLap` does fast interval overlap testing with a simple python data structure.
+`InterLap` does fast interval overlap testing with a simple python data
+structure.
 
-It works well on the types of querying done in genomic datasets where we have 10's
-of thousands of intervals and we check for overlap millions of times. It is very
-simple and has no dependencies.
+It works well on the types of querying done in genomic datasets where we have
+10's of thousands of intervals and we check for overlap millions of times. It
+is very simple and has no dependencies.
 
-It takes tuples or lists where the first 2 elements are start, end and the remaining
-elements can be anything.
+It takes tuples or lists where the first 2 elements are start, end and the
+remaining elements can be anything.
 
 >>> from interlap import InterLap
 >>> inter = InterLap()
@@ -86,12 +87,12 @@ class InterLap(object):
         self._maxlen = max(r[1] - r[0] for r in (ranges or [[0, 0]]))
 
     def add(self, ranges):
-        """Add a single (or many) [start, end, \*] item to the tree."""
-        if len(ranges) and isinstance(ranges[0] , int_types):
+        r"""Add a single (or many) [start, end, \*] item to the tree."""
+        if len(ranges) and isinstance(ranges[0], int_types):
             ranges = [ranges]
         iset = self._iset
         self._maxlen = max(self._maxlen, max(r[1] - r[0] + 1 for r in ranges))
-        # if 
+
         if len(ranges) > 30 or len(iset) < len(ranges):
             iset.extend(ranges)
             iset.sort()
@@ -102,6 +103,7 @@ class InterLap(object):
     update = add
 
     def __len__(self):
+        """Return number of intervals."""
         return len(self._iset)
 
     def find(self, other):
@@ -114,7 +116,7 @@ class InterLap(object):
         for o in iiter: yield o
 
     def __contains__(self, other):
-        """Return a boolean indicating whether `other` overlaps any elements in the tree."""
+        """Indicate whether `other` overlaps any elements in the tree."""
         iset = self._iset
         l = binsearch_left_start(iset, other[0] - self._maxlen, 0, len(iset))
         # since often the found interval will overlap, we short cut that
@@ -126,13 +128,14 @@ class InterLap(object):
             if left[0] > other[1]: return False
 
         r = binsearch_right_end(iset, other[1], 0, len(iset))
-        return any(s[0] <= other[1] and s[1] >= other[0] for s in iset[l + max_search:r])
+        return any(s[0] <= other[1] and s[1] >= other[0]
+                   for s in iset[l + max_search:r])
 
 if __name__ == "__main__":
     import time
     t0 = time.time()
     import doctest
     print(doctest.testmod(verbose=0,
-        optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+          optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     print(time.time() - t0)
 
