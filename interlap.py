@@ -47,11 +47,17 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 
 >>> for s, e in ranges:
 ...     assert (s, e) in inter
+
+>>> for i, se in enumerate(inter):
+...     if i > 10: break
+...     assert se[0] < se[1]    
+...
+
 """
 
 __all__ = ['InterLap']
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 try:
     int_types = (int, long)
@@ -130,6 +136,9 @@ class InterLap(object):
         r = binsearch_right_end(iset, other[1], 0, len(iset))
         return any(s[0] <= other[1] and s[1] >= other[0]
                    for s in iset[l + max_search:r])
+
+    def __iter__(self):
+        return iter(self._iset)
 
 if __name__ == "__main__":
     import time
