@@ -70,6 +70,25 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 >>> len(list(inter.closest((10, 13))))
 12
 
+>>> for i in range(10):
+...     inter.add((18, 21))
+>>> len(list(inter.closest((10, 13))))
+10
+
+>>> for i in range(10):
+...     inter.add((5, 5))
+>>> len(list(inter.closest((10, 13))))
+20
+
+>>> for i in range(10):
+...     inter.add((3, 5))
+>>> len(list(inter.closest((10, 13))))
+30
+
+>>> inter.add((9, 9))
+>>> list(inter.closest((10, 13)))
+[(9, 9)]
+
 """
 from itertools import groupby
 from operator import itemgetter
