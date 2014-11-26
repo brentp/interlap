@@ -52,7 +52,26 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 ...     assert se[0] < se[1]    
 ...
 
+>>> list(inter.closest((2, 2)))
+[(2, 3, {'info': 'hello'})]
+
+>>> list(inter.closest((2, 21)))
+[(2, 3, {'info': 'hello'}), (20, 22, {'info': 'hi'})]
+
+>>> list(inter.closest((2, 21)))
+[(2, 3, {'info': 'hello'}), (20, 22, {'info': 'hi'})]
+
+>>> list(inter.closest((11, 12)))
+[(2, 3, {'info': 'hello'}), (20, 22, {'info': 'hi'})]
+
+>>> for i in range(10):
+...     inter.add((20, 21))
+>>> len(list(inter.closest((10, 13))))
+12
+
 """
+from itertools import groupby
+from operator import itemgetter
 
 __all__ = ['InterLap']
 
@@ -115,9 +134,32 @@ class InterLap(object):
         iset = self._iset
         l = binsearch_left_start(iset, other[0] - self._maxlen, 0, len(iset))
         r = binsearch_right_end(iset, other[1], 0, len(iset))
-        iopts = self._iset[l:r]
+        iopts = iset[l:r]
         iiter = (s for s in iopts if s[0] <= other[1] and s[1] >= other[0])
         for o in iiter: yield o
+
+    def closest(self, other):
+        iset = self._iset
+        l = binsearch_left_start(iset, other[0] - self._maxlen, 0, len(iset))
+        r = binsearch_right_end(iset, other[1], 0, len(iset))
+        l, r = max(0, l - 1), min(len(iset), r + 2)
+
+        while r < len(iset) and iset[r - 1][0] == iset[r][0]:
+            r += 1
+
+        while l > 1 and iset[l][1] == iset[l + 1][1]:
+            l -= 1
+        iopts = iset[l:r]
+        ovls = [s for s in iopts if s[0] <= other[1] and s[1] >= other[0]]
+        if ovls:
+            for o in ovls: yield o
+        else:
+            iopts = sorted([(min(abs(i[0] - other[1]), abs(other[0] - i[1])), i) for i in iopts])
+            for dist, g in groupby(iopts, itemgetter(0)):
+                # only yield the closest intervals
+                for d, ival in g:
+                    yield ival
+                break
 
     def __contains__(self, other):
         """Return a boolean indicating whether `other` overlaps any elements in the tree."""
