@@ -50,7 +50,7 @@ Test every item in the InterLap. These 50K queries take < 0.5 seconds:
 
 >>> for i, se in enumerate(inter):
 ...     if i > 10: break
-...     assert se[0] < se[1]    
+...     assert se[0] < se[1]
 ...
 
 >>> list(inter.closest((2, 2)))
@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 try:
     int_types = (int, long)
@@ -111,7 +111,7 @@ def binsearch_left_start(intervals, x, lo, hi):
         else: hi = mid
     return lo
 
-# like python's bisect_right find the _highest_ index where the value x 
+# like python's bisect_right find the _highest_ index where the value x
 # could be inserted to maintain order in the list intervals
 def binsearch_right_end(intervals, x, lo, hi):
     while lo < hi:
