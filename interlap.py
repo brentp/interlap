@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 
 try:
     int_types = (int, long)
@@ -283,13 +283,18 @@ class Interval(object):
 
     >>> Interval([(45, 65), (70, 95)]).split([(66, 67)])
     [Interval([(45, 65)]), Interval([(70, 95)])]
+
+    >>> Interval()
+    Interval([])
+
     """
 
     __slots__ = ('_vals', '_fixed')
 
-    def __init__(self, args):
-        assert isinstance(args, list)
+    def __init__(self, args=None):
         self._vals = []
+        if args is None: return
+        assert isinstance(args, list)
         if len(args) > 0:
             assert isinstance(args[0], tuple)
             assert isinstance(args[0][0], (int, long))
