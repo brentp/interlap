@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 try:
     int_types = (int, long)
@@ -242,6 +242,7 @@ def reduce(args):
             ret.append((ns, ne))
     return ret
 
+
 class Interval(object):
     """
     >>> i = Interval([(2, 10), (8, 20), (30, 40)])
@@ -279,6 +280,9 @@ class Interval(object):
 
     >>> Interval([(45, 65), (70, 74), (76, 78)]).split([(1, 50), (60, 80)])
     [Interval([(50, 60)])]
+
+    >>> Interval([(45, 65), (70, 95)]).split([(66, 67)])
+    [Interval([(45, 65)]), Interval([(70, 95)])]
     """
 
     __slots__ = ('_vals', '_fixed')
@@ -315,8 +319,14 @@ class Interval(object):
 
         ret = []
         last = []
+        n_greater = 0
         for s in self._vals:
             os = [o for o in others if overlaps(s[0], s[1], o[0], o[1])]
+            greater = sum(1 for o in others if s[0] >= o[1])
+            inew = False
+            if greater != n_greater:
+                inew = True
+                n_greater = greater
             if os:
                 if last:
                     ret.append(Interval(last))
@@ -324,7 +334,6 @@ class Interval(object):
                 # split or truncate the current s interval
                 # truncate right-end of interval
                 start = s[0]
-                #last_start = float("-inf")
                 for i, o in enumerate(os):
                     if s[0] < o[0]:
                         last.append((start, min(s[1], o[0])))
@@ -343,9 +352,17 @@ class Interval(object):
                     start = o[1]
             else:
                 last.append(s)
+            # one of the splitters fell between the most recently added interval
+            # and what preceded it.
+            if inew:
+                if len(last) > 1:
+                    a, last = last[:-1], last[-1:]
+                    ret.append(Interval(a))
+
         if last:
             ret.append(Interval(last))
         return ret
+
 
 if __name__ == "__main__":
     import time
