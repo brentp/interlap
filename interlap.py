@@ -268,18 +268,28 @@ class Interval(object):
     >>> i
     Interval([(1, 100)])
 
+    >>> Interval([(1, 100)]).split([(55, 65), (75, 85)])
+    [Interval([(1, 55)]), Interval([(65, 75)]), Interval([(85, 100)])]
 
+    >>> Interval([(1, 50), (60, 80)]).split([(45, 65), (75, 85)])
+    [Interval([(1, 45)]), Interval([(65, 75)])]
+
+    >>> Interval([(1, 50), (60, 80)]).split([(45, 65), (70, 74), (76, 78)])
+    [Interval([(1, 45)]), Interval([(65, 70)]), Interval([(74, 76)]), Interval([(78, 80)])]
+
+    >>> Interval([(45, 65), (70, 74), (76, 78)]).split([(1, 50), (60, 80)])
+    [Interval([(50, 60)])]
     """
 
     __slots__ = ('_vals', '_fixed')
 
     def __init__(self, args):
         assert isinstance(args, list)
-        assert isinstance(args[0], tuple)
-        assert isinstance(args[0][0], (int, long))
         self._vals = []
-        self._vals = reduce(args)
-        self._fixed = True
+        if len(args) > 0:
+            assert isinstance(args[0], tuple)
+            assert isinstance(args[0][0], (int, long))
+            self._vals = reduce(args)
 
     def _as_tuples(self, args):
         vals = []
@@ -293,12 +303,49 @@ class Interval(object):
                     vals.append(a)
         return vals
 
-
     def add(self, args):
         self._vals = reduce(self._vals + self._as_tuples(args))
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._vals)
+
+    def split(self, others):
+        others = sorted(self._as_tuples(others))
+        old = self._vals
+
+        ret = []
+        last = []
+        for s in self._vals:
+            os = [o for o in others if overlaps(s[0], s[1], o[0], o[1])]
+            if os:
+                if last:
+                    ret.append(Interval(last))
+                    last = []
+                # split or truncate the current s interval
+                # truncate right-end of interval
+                start = s[0]
+                #last_start = float("-inf")
+                for i, o in enumerate(os):
+                    if s[0] < o[0]:
+                        last.append((start, min(s[1], o[0])))
+                        #print("start, s, o:", start, s, o, file=sys.stderr)
+                        ret.append(Interval(last))
+                        last = []
+                    if s[1] > o[1]:
+                        if last:
+                            ret.append(Interval(last))
+                            last = []
+                        last.append((max(s[0], o[1]), s[1]))
+                        if i < len(os) - 1:
+                            if os[i + 1][0] < last[-1][1]:
+                                last[-1] = last[-1][0], os[i + 1][0]
+
+                    start = o[1]
+            else:
+                last.append(s)
+        if last:
+            ret.append(Interval(last))
+        return ret
 
 if __name__ == "__main__":
     import time
