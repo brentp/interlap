@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.1.3'
+__version__ = '0.2.0'
 
 try:
     int_types = (int, long)

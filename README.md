@@ -109,3 +109,28 @@ In my testing, the method implemented here, using a sorted list and keeping
 track of the longest observed interval is the fastest *pure python* method
 *as long as the longest observed interval is does not cover a substantial 
 fraction of intervals in the set*.
+
+
+IntervalSet Operations
+----------------------
+
+As of version 0.2.0 Interlap also includes an `Interval` class that behaves
+like what is normally called an interval set.
+
+```python
+
+# note how it merges overlapping sub-intervals.
+>>> Interval([(1, 95), (95, 100)]).add(Interval([(90, 100)]))
+Interval([(1, 100)])
+
+# it also has a fairly specialize 'split' function to split an interval-set
+# by another set of intervals:
+>>> Interval([(1, 50), (60, 80)]).split([(45, 65), (70, 74), (76, 78)])
+[Interval([(1, 45)]), Interval([(65, 70)]), Interval([(74, 76)]), Interval([(78, 80)])]
+
+>>> Interval([(45, 65), (70, 74), (76, 78)]).split([(1, 50), (60, 80)])
+[Interval([(50, 60)])]
+
+```
+
+See the doctests under the Interval class for more details
