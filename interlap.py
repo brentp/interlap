@@ -341,19 +341,21 @@ class Interval(object):
                 start = s[0]
                 for i, o in enumerate(os):
                     if s[0] < o[0]:
-                        last.append((start, min(s[1], o[0])))
-                        #print("start, s, o:", start, s, o, file=sys.stderr)
-                        ret.append(Interval(last))
-                        last = []
+                        if min(s[1], o[0])>start:
+                            last.append((start, min(s[1], o[0])))
+                            #print("start, s, o:", start, s, o, file=sys.stderr)
+                            ret.append(Interval(last))
+                            last = []
                     if s[1] > o[1]:
                         if last:
                             ret.append(Interval(last))
                             last = []
                         last.append((max(s[0], o[1]), s[1]))
                         if i < len(os) - 1:
-                            if os[i + 1][0] < last[-1][1]:
+                            if os[i + 1][0] < last[-1][1] and last[-1][0] < os[i + 1][0]:
                                 last[-1] = last[-1][0], os[i + 1][0]
-
+                        elif last[-1][0] >= os[i + 1][0]:
+                            last.pop()
                     start = o[1]
             else:
                 last.append(s)
