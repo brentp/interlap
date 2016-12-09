@@ -360,8 +360,8 @@ class Interval(object):
                         if i < len(os) - 1:
                             if last[-1][0] < os[i + 1][0]:
                                 last[-1] = last[-1][0], os[i + 1][0]
-                        elif last[-1][0] >= os[i + 1][0]:
-                            last.pop()
+                            elif last[-1][0] >= os[i + 1][0]:
+                                last.pop()
                     start = o[1]
             else:
                 last.append(s)
