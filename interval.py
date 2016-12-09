@@ -67,12 +67,6 @@ class Interval(object):
     >>> i
     Interval([(1, 100)])
 
-    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(43, 48)])
-    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
-
-    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(44, 48)])
-    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
-    
     >>> Interval([(1, 100)]).split([(55, 65), (75, 85)])
     [Interval([(1, 55)]), Interval([(65, 75)]), Interval([(85, 100)])]
 
@@ -87,7 +81,6 @@ class Interval(object):
 
     >>> Interval([(45, 65), (70, 95)]).split([(66, 67)])
     [Interval([(45, 65)]), Interval([(70, 95)])]
-
     """
 
     __slots__ = ('_vals', '_fixed')
@@ -120,6 +113,7 @@ class Interval(object):
 
     def split(self, others):
         others = sorted(self._as_tuples(others))
+        old = self._vals
 
         ret = []
         last = []
@@ -140,21 +134,18 @@ class Interval(object):
                 start = s[0]
                 for i, o in enumerate(os):
                     if s[0] < o[0]:
-                        if min(s[1], o[0])>start:
-                            last.append((start, min(s[1], o[0])))
-                            #print("start, s, o:", start, s, o, file=sys.stderr)
-                            ret.append(Interval(last))
-                            last = []
+                        last.append((start, min(s[1], o[0])))
+                        #print("start, s, o:", start, s, o, file=sys.stderr)
+                        ret.append(Interval(last))
+                        last = []
                     if s[1] > o[1]:
                         if last:
                             ret.append(Interval(last))
                             last = []
                         last.append((max(s[0], o[1]), s[1]))
                         if i < len(os) - 1:
-                            if os[i + 1][0] < last[-1][1] and last[-1][0] < os[i + 1][0]:
+                            if os[i + 1][0] < last[-1][1]:
                                 last[-1] = last[-1][0], os[i + 1][0]
-                            elif last[-1][0] >= os[i + 1][0]:
-                                last.pop()
 
                     start = o[1]
             else:

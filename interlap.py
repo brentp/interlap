@@ -269,6 +269,12 @@ class Interval(object):
     >>> i
     Interval([(1, 100)])
 
+    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(43, 48)])
+    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
+
+    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(44, 48)])
+    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
+
     >>> Interval([(1, 100)]).split([(55, 65), (75, 85)])
     [Interval([(1, 55)]), Interval([(65, 75)]), Interval([(85, 100)])]
 
