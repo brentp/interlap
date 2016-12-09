@@ -358,7 +358,7 @@ class Interval(object):
                             last = []
                         last.append((max(s[0], o[1]), s[1]))
                         if i < len(os) - 1:
-                            if os[i + 1][0] < last[-1][1] and last[-1][0] < os[i + 1][0]:
+                            if last[-1][0] < os[i + 1][0]:
                                 last[-1] = last[-1][0], os[i + 1][0]
                         elif last[-1][0] >= os[i + 1][0]:
                             last.pop()
