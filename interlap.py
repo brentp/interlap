@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.2.3'
+__version__ = '0.2.4'
 
 try:
     int_types = (int, long)
@@ -216,6 +216,8 @@ def overlaps(s1, e1, s2, e2):
     False
     >>> overlaps (5, 6, 3, 5)
     False
+    >>> overlaps(2, 4, 2, 4)
+    True
     """
     return not (e1 <= s2 or s1 >= e2)
 
@@ -302,7 +304,7 @@ class Interval(object):
         if args is None: return
         assert isinstance(args, list)
         if len(args) > 0:
-            assert isinstance(args[0], tuple)
+            assert isinstance(args[0], tuple), (args)
             assert isinstance(args[0][0], (int, long))
             self._vals = reduce(args)
 
@@ -364,14 +366,14 @@ class Interval(object):
                                 last.pop()
                     start = o[1]
             else:
-                last.append(s)
-            # one of the splitters fell between the most recently added interval
-            # and what preceded it.
+                if last:
+                    ret.append(Interval(last))
+                    last = []
+                ret.append(Interval([s]))
             if inew:
                 if len(last) > 1:
                     a, last = last[:-1], last[-1:]
                     ret.append(Interval(a))
-
         if last:
             ret.append(Interval(last))
         return ret
