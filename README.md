@@ -123,14 +123,6 @@ like what is normally called an interval set.
 >>> Interval([(1, 95), (95, 100)]).add(Interval([(90, 100)]))
 Interval([(1, 100)])
 
-# it also has a fairly specialize 'split' function to split an interval-set
-# by another set of intervals:
->>> Interval([(1, 50), (60, 80)]).split([(45, 65), (70, 74), (76, 78)])
-[Interval([(1, 45)]), Interval([(65, 70)]), Interval([(74, 76)]), Interval([(78, 80)])]
-
->>> Interval([(45, 65), (70, 74), (76, 78)]).split([(1, 50), (60, 80)])
-[Interval([(50, 60)])]
-
 ```
 
 See the doctests under the Interval class for more details

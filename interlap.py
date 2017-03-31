@@ -95,7 +95,7 @@ from operator import itemgetter
 
 __all__ = ['InterLap']
 
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 try:
     int_types = (int, long)
@@ -271,32 +271,9 @@ class Interval(object):
     >>> i
     Interval([(1, 100)])
 
-    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(43, 48)])
-    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
-
-    >>> Interval([(11, 18), (22, 28), (32, 39), (42, 48)]).split([(12, 18), (22, 26),(43, 44),(44, 48)])
-    [Interval([(11, 12)]), Interval([(26, 28)]), Interval([(32, 39)]), Interval([(42, 43)])]
-
-    >>> Interval([(1, 100)]).split([(55, 65), (75, 85)])
-    [Interval([(1, 55)]), Interval([(65, 75)]), Interval([(85, 100)])]
-
-    >>> Interval([(1, 50), (60, 80)]).split([(45, 65), (75, 85)])
-    [Interval([(1, 45)]), Interval([(65, 75)])]
-
-    >>> Interval([(1, 50), (60, 80)]).split([(45, 65), (70, 74), (76, 78)])
-    [Interval([(1, 45)]), Interval([(65, 70)]), Interval([(74, 76)]), Interval([(78, 80)])]
-
-    >>> Interval([(45, 65), (70, 74), (76, 78)]).split([(1, 50), (60, 80)])
-    [Interval([(50, 60)])]
-
-    >>> Interval([(45, 65), (70, 95)]).split([(66, 67)])
-    [Interval([(45, 65)]), Interval([(70, 95)])]
-
     >>> Interval()
     Interval([])
 
-    >>> Interval([(26782, 26890), (27874, 28144), (28232, 28286), (34219, 34405), (34632, 34759), (34935, 35008), (37089, 37266), (42900, 43135), (45349, 45487), (47123, 47183), (47381, 47501), (48917, 48968), (49071, 49201), (50109, 50221), (51128, 51287), (51370, 51483), (52287, 52501), (52849, 52912), (53015, 53214), (53353, 53472), (55530, 55611), (55700, 55757), (57795, 57952), (58148, 58212), (58320, 58416), (58687, 58777), (60611, 60612)]).split([(26782, 26890), (27874, 28144), (28232, 28286), (34219, 34405), (34632, 34759), (34935, 35008), (37089, 37266), (42900, 43135)])
-    [Interval([(45349, 45487)]), Interval([(47123, 47183)]), Interval([(47381, 47501)]), Interval([(48917, 48968)]), Interval([(49071, 49201)]), Interval([(50109, 50221)]), Interval([(51128, 51287)]), Interval([(51370, 51483)]), Interval([(52287, 52501)]), Interval([(52849, 52912)]), Interval([(53015, 53214)]), Interval([(53353, 53472)]), Interval([(55530, 55611)]), Interval([(55700, 55757)]), Interval([(57795, 57952)]), Interval([(58148, 58212)]), Interval([(58320, 58416)]), Interval([(58687, 58777)]), Interval([(60611, 60612)])]
     """
 
     __slots__ = ('_vals', '_fixed')
@@ -327,59 +304,6 @@ class Interval(object):
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._vals)
-
-    def split(self, others):
-        others = sorted(self._as_tuples(others))
-        old = self._vals
-
-        ret = []
-        last = []
-        n_greater = 0
-        for s in self._vals:
-            os = [o for o in others if overlaps(s[0], s[1], o[0], o[1])]
-            greater = sum(1 for o in others if s[0] >= o[1])
-            inew = False
-            if greater != n_greater:
-                inew = True
-                n_greater = greater
-            if os:
-                if last:
-                    ret.append(Interval(last))
-                    last = []
-                # split or truncate the current s interval
-                # truncate right-end of interval
-                start = s[0]
-                for i, o in enumerate(os):
-                    if s[0] < o[0]:
-                        if min(s[1], o[0])>start:
-                            last.append((start, min(s[1], o[0])))
-                            #print("start, s, o:", start, s, o, file=sys.stderr)
-                            ret.append(Interval(last))
-                            last = []
-                    if s[1] > o[1]:
-                        if last:
-                            ret.append(Interval(last))
-                            last = []
-                        last.append((max(s[0], o[1]), s[1]))
-                        if i < len(os) - 1:
-                            if last[-1][0] < os[i + 1][0]:
-                                last[-1] = last[-1][0], os[i + 1][0]
-                            elif last[-1][0] >= os[i + 1][0]:
-                                last.pop()
-                    start = o[1]
-            else:
-                if last:
-                    ret.append(Interval(last))
-                    last = []
-                ret.append(Interval([s]))
-            if inew:
-                if len(last) > 1:
-                    a, last = last[:-1], last[-1:]
-                    ret.append(Interval(a))
-        if last:
-            ret.append(Interval(last))
-        return ret
-
 
 if __name__ == "__main__":
     import time
