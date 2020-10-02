@@ -25,6 +25,7 @@ setup(
     url='http://brentp.github.io/interlap',
     description='interlap: fast, simple interval overlap testing',
     long_description = open('README.md').read(),
+    long_description_content_type="text/markdown",
     license='MIT',
     classifiers=[
             "Development Status :: 4 - Beta",
