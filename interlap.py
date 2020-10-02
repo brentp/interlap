@@ -284,7 +284,7 @@ class Interval(object):
         assert isinstance(args, list)
         if len(args) > 0:
             assert isinstance(args[0], tuple), (args)
-            assert isinstance(args[0][0], (int, long))
+            assert isinstance(args[0][0], int_types)
             self._vals = reduce(args)
 
     def _as_tuples(self, args):
